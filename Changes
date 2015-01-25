@@ -1,9 +1,31 @@
 ==================================================
-Changes from 2013-12-09 00:00:00 +0000 to present.
+Changes from 2014-01-25 00:00:00 +0000 to present.
 ==================================================
 
 ------------------------------------------
-version 0.004 at 2014-12-09 10:58:06 +0000
+version 0.005 at 2015-01-25 20:15:27 +0000
+------------------------------------------
+
+  Change: 17eb1e05d0151167a8f335c56cc34bd93aa651ff
+  Author: Jerome Eteve <jerome@eteve.net>
+  Date : 2015-01-25 19:27:21 +0000
+
+    Implemented fast_loop_through 
+
+  Change: cf487b45ecf870f898d091bca045d22f87811ba4
+  Author: Jerome Eteve <jerome@eteve.net>
+  Date : 2015-01-25 15:37:54 +0000
+
+    Better doc 
+
+  Change: 03d74c468269d85ad6408a261f8d5acd5a284987
+  Author: Jerome Eteve <jerome@eteve.net>
+  Date : 2015-01-25 15:10:33 +0000
+
+    Renamed badly named test 
+
+------------------------------------------
+version 0.004 at 2014-12-09 10:49:19 +0000
 ------------------------------------------
 
   Change: 5ec302bfd010537a45355355e98370dc1e15a0fd

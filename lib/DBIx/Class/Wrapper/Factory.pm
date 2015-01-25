@@ -1,8 +1,5 @@
 package DBIx::Class::Wrapper::Factory;
-{
-  $DBIx::Class::Wrapper::Factory::VERSION = '0.004';
-}
-
+$DBIx::Class::Wrapper::Factory::VERSION = '0.005';
 use Moose;
 extends qw/DBIx::Class::Wrapper::FactoryBase/;
 
@@ -18,15 +15,19 @@ subclasses of this for any underlying DBIx::Class ResultSet.
 To implement your own factory containing your business code for the underlying
 DBIC resulsets, you need to subclass this.
 
+See L<DBIx::Class::Wrapper> for a simple synopsis overview.
+
 =head1 PROPERTIES
 
 =head2 dbic_rs
 
- The original L<DBIx::Class::ResultSet>. Mandatory.
+The original L<DBIx::Class::ResultSet>. Mandatory.
 
 =head2 bm
 
 The business model consuming the role L<DBIx::Class::Wrapper>. Mandatory.
+
+See L<DBIx::Class::Wrapper> for more details.
 
 =cut
 
@@ -42,8 +43,27 @@ sub _build_dbic_rs{
 =head2 build_dbic_rs
 
 Builds the dbic ResultSet to be wrapped by this factory.
+
+Defaults to the DBIx::Class Resultset with the same name
+as this factory.
+
 You can override this in your business specific factories to build
-specific resultsets.
+specific resultsets:
+
+ package My::Model::Factory::SomeName;
+
+ use Moose; extends  qw/DBIx::Class::Wrapper::Factory/ ;
+
+ sub build_dbic_rs{
+    my ($self) = @_;
+    return $self->bm->dbic_schema->resultset('SomeOtherName');
+
+    # Or with some restriction:
+
+    return $self->bm->dbic_schema->resultset('SomeOtherName')
+           ->search({ bla => ... });
+ }
+
 
 =cut
 
@@ -62,7 +82,7 @@ sub build_dbic_rs{
 Instanciate a new NOT INSERTED IN DB row and wrap it using
 the wrap method.
 
-See L<DBIx::Class::ResultSet::new_result>
+See L<DBIx::Class::ResultSet/new_result>
 
 =cut
 
@@ -76,6 +96,8 @@ sub new_result{
 Creates a new object in the DBIC Schema and return it wrapped
 using the wrapper method.
 
+See L<DBIx::Class::ResultSet/create>
+
 =cut
 
 sub create{
@@ -87,6 +109,8 @@ sub create{
 
 Finds an object in the DBIC schema and returns it wrapped
 using the wrapper method.
+
+See L<DBIx::Class::ResultSet/find>
 
 =cut
 
@@ -100,6 +124,8 @@ sub find{
 
 Equivalent to DBIC Resultset 'first' method.
 
+See <DBIx::Class::ResultSet/first>
+
 =cut
 
 sub first{
@@ -111,6 +137,8 @@ sub first{
 =head2 find_or_create
 
 Wraps around the original DBIC find_or_create method.
+
+See L<DBIx::Class::ResultSet/find_or_create>
 
 =cut
 
@@ -125,6 +153,8 @@ sub find_or_create{
 
 Shortcut to underlying dbic_rs pager.
 
+See L<DBIx::Class::ResultSet/pager>.
+
 =cut
 
 sub pager{
@@ -134,9 +164,7 @@ sub pager{
 
 =head2 delete
 
-Shortcut to L<DBIx::Class::ResultSet> delete method of the
-underlying dbic_rs
-
+Shortcut to L<DBIx::Class::ResultSet/delete>
 
 =cut
 
@@ -148,6 +176,8 @@ sub delete{
 =head2 get_column
 
 Shortcut to the get_column of the decorated dbic_rs
+
+See L<DBIx::Class::ResultSet/get_column>
 
 =cut
 
@@ -171,6 +201,9 @@ sub search_rs{
 Search objects in the DBIC Schema and returns a new intance
 of this factory.
 
+Note that unlike DBIx::Class::ResultSet, this search method
+will not return an Array of all results in an array context.
+
 =cut
 
 sub search{
@@ -189,7 +222,13 @@ Wraps an L<DBIx::Class::Row> in a business object. By default, it returns the
 Row itself.
 
 Override that in your subclasses of factories if you need to wrap some business code
-around the L<DBIx::Class::Row>
+around the L<DBIx::Class::Row>:
+
+  sub wrap{
+     my ($self, $o) = @_;
+
+     return My::Model::O::SomeObject->new({ o => $o , ... });
+  }
 
 =cut
 
@@ -258,6 +297,16 @@ sub loop_through{
   my $limit = $opts->{limit};
   my $rows = defined $opts->{rows} ? $opts->{rows} : 10;
 
+  my $attrs = { %{$self->dbic_rs->{attrs} || {} } };
+  unless( $attrs->{order_by} ){
+    warn(q|
+
+Missing order_by attribute. Order will be undefined in |.__PACKAGE__.q| loop_through.
+
+|);
+
+  }
+
   # init
   my $page = 1;
   my $search = $self->search(undef , { page => $page , rows => $rows });
@@ -282,9 +331,149 @@ sub loop_through{
   }
 }
 
+
+=head2 fast_loop_through
+
+Loops through all the objects of this factory
+in a Seeking fashion. If the primary key of the underlying
+resultset is orderable and indexed, this should run
+in linear time of the number of rows on the resultset.
+
+Usage:
+
+  $this->fast_loop_through(sub{my ($o) = @_; ... } );
+
+  $this->fast_loop_through(sub{ .. } , { rows => 100 , limit => 1000 });
+
+Options:
+
+ rows: Fetch this amount of rows at each query. Default to 100
+
+ limit: Return after looping through this amount of rows.
+
+B<Important>
+
+=over
+
+You do not need to order the set, as this will order it by ascending primary key.
+
+Incidently, it means that if other processes are writing to this resultset,
+this method will play catch up on the resultset, so if the writing rate is higher
+than the reading rate, this might take a while to return.
+
+If you want to avoid this, set the option 'order' to 'desc'.
+
+=back
+
+Returns the number of rows looped through.
+
+Prerequisites:
+
+Must have:
+
+- The underlying L<DBIx::Class::ResultSource> has a primary key
+
+- Each component of the primary key supports the operators '>' and '<'
+
+- It is possible to order all the rows by this primary key alone.
+
+Should have:
+
+- This primary key is indexed and offers fast comparison access.
+
+Inspired by http://use-the-index-luke.com/sql/partial-results/fetch-next-page
+
+=cut
+
+sub fast_loop_through{
+  my ($self , $code, $opts) = @_;
+
+  unless( defined $code ){ $code = sub{}; }
+  unless( defined $opts ){ $opts = {}; }
+
+  my $order = $opts->{order} || 'asc';
+  my $rows = $opts->{rows} || 100;
+  my $limit = $opts->{limit};
+
+  # Gather the required info about the resultset
+  my $rs = $self->dbic_rs();
+
+  # What is this source alias?
+  my $me = $rs->current_source_alias();
+
+  # The source
+  my $source = $rs->result_source();
+  my @primary_columns = $source->primary_columns();
+  unless( @primary_columns ){
+    confess("Result Source ".$source->source_name()." does not have a primary key");
+  }
+
+  my $order_by = [ map{ +{ '-'.$order => $me.'.'.$_ } } @primary_columns ];
+
+  my $n_rows = 0;
+
+  my $last_row;
+  do{
+    my $resultset = $self->dbic_rs->search_rs(undef , { order_by => $order_by , rows => $rows });
+    if( $last_row ){
+      # We have a last row.
+      # The idea here is to use the primary key to get the rows above
+      # this last row.
+
+      # The primary key of the first queried row should be greater than
+      # the last row's one.
+      # Logically it should be: ( queried PK components ) > ( last row PK components )
+      # If the primary key is A , B , C , then the where clause should contain (for order desc):
+      # A > a || ( A = a && B > b || ( B = b && C > c ) )
+
+      my $top_or = { -or => [] };
+      my $cur_or = $top_or;
+
+      my $cmp_op = $order eq 'asc' ? '>' : '<';
+
+      my $key_i = 0;
+      for(; $key_i < @primary_columns - 1 ; $key_i++ ){
+
+        my $column = $primary_columns[$key_i];
+
+        my $nested_or = { -or => [] };
+
+        push @{ $cur_or->{-or} } , { $me.'.'.$column => { $cmp_op => $last_row->get_column($column) }};
+        push @{ $cur_or->{-or} } , { -and => [ { $me.'.'.$column => { '=' => $last_row->get_column($column) } },
+                                               $nested_or
+                                             ]
+                                   };
+        $cur_or = $nested_or;
+      }
+
+      my $last_column = $primary_columns[$key_i];
+      push @{ $cur_or->{-or} } , { $me.'.'.$last_column => {  $cmp_op => $last_row->get_column($last_column) } };
+
+      $resultset = $resultset->search_rs($top_or);
+    } # End of above last row seeking
+
+    $last_row = undef;
+
+    while( my $o = $resultset->next() ){
+      $last_row = $o;
+      my $wrapped = $self->wrap($o);
+      &$code($wrapped);
+      $n_rows++;
+
+      if( $limit && ( $n_rows == $limit ) ){
+        return $n_rows;
+      }
+    }
+  }while( $last_row );
+
+  return $n_rows;
+}
+
 =head2 next
 
 Returns next Business Object from this current DBIx::Resultset.
+
+See L<DBIx::Class::ResultSet/next>
 
 =cut
 
@@ -298,6 +487,8 @@ sub next{
 =head2 count
 
 Returns the number of objects in this ResultSet.
+
+See L<DBIx::Class::ResultSet/count>
 
 =cut
 

@@ -1,8 +1,5 @@
 package DBIx::Class::Wrapper::FactoryBase;
-{
-  $DBIx::Class::Wrapper::FactoryBase::VERSION = '0.004';
-}
-
+$DBIx::Class::Wrapper::FactoryBase::VERSION = '0.005';
 use Moose;
 
 =head1 NAME
