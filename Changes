@@ -1,9 +1,33 @@
 ==================================================
-Changes from 2014-01-25 00:00:00 +0000 to present.
+Changes from 2014-07-15 00:00:00 +0000 to present.
 ==================================================
 
 ------------------------------------------
-version 0.005 at 2015-01-25 20:15:27 +0000
+version 0.006 at 2015-07-15 14:51:13 +0000
+------------------------------------------
+
+  Change: 10cafc0f288f15c41e7fd87f046f51a528bd1a61
+  Author: Jerome Eteve <jeteve@users.noreply.github.com>
+  Date : 2015-07-15 15:50:18 +0000
+
+    Merge pull request #1 from patmooney/implement-find_or_new
+
+    implement find or new 
+
+  Change: 90385382951b9e858cfe12f1607ad1243b308b3d
+  Author: Patrick Mooney <patrick@broadbean.com>
+  Date : 2015-07-15 15:41:45 +0000
+
+    make sure we check the storage status of the correct result 
+
+  Change: 2c27422fde7300bd8ffce2dd055cfeb888b52f35
+  Author: Patrick Mooney <patrick@broadbean.com>
+  Date : 2015-07-15 15:34:37 +0000
+
+    implement find or new 
+
+------------------------------------------
+version 0.005 at 2015-01-25 19:27:21 +0000
 ------------------------------------------
 
   Change: 17eb1e05d0151167a8f335c56cc34bd93aa651ff

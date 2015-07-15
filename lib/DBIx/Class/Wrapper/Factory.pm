@@ -1,5 +1,5 @@
 package DBIx::Class::Wrapper::Factory;
-$DBIx::Class::Wrapper::Factory::VERSION = '0.005';
+$DBIx::Class::Wrapper::Factory::VERSION = '0.006';
 use Moose;
 extends qw/DBIx::Class::Wrapper::FactoryBase/;
 
@@ -146,6 +146,19 @@ sub find_or_create{
   my ($self , $args) = @_;
   my $original = $self->dbic_rs->find_or_create($args);
   return $original ? $self->wrap($original) : undef;
+}
+
+=head2 find_or_new
+
+Wraps around the original DBIC find_or_new method.
+
+See L<DBIx::Class::ResultSet/find_or_new>
+
+=cut
+
+sub find_or_new {
+  my ($self, @args) = @_;
+  return $self->wrap( $self->dbic_rs->find_or_new( @args ) );
 }
 
 

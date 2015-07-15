@@ -1,5 +1,5 @@
 package DBIx::Class::Wrapper::Object;
-$DBIx::Class::Wrapper::Object::VERSION = '0.005';
+$DBIx::Class::Wrapper::Object::VERSION = '0.006';
 use Moose;
 has 'factory' => ( isa => 'DBIx::Class::Wrapper::Factory' , required => 1 , is => 'ro' );
 
