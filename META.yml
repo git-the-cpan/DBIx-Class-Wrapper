@@ -7,7 +7,7 @@ build_requires:
 configure_requires:
   ExtUtils::MakeMaker: '0'
 dynamic_config: 0
-generated_by: 'Dist::Zilla version 5.035, CPAN::Meta::Converter version 2.143240'
+generated_by: 'Dist::Zilla version 5.039, CPAN::Meta::Converter version 2.143240'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -22,4 +22,4 @@ requires:
 resources:
   homepage: https://github.com/jeteve/DBIx-Class-Wrapper
   repository: https://github.com/jeteve/DBIx-Class-Wrapper.git
-version: '0.006'
+version: '0.007'

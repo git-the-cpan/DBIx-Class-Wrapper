@@ -1,5 +1,5 @@
 package DBIx::Class::Wrapper::Factory;
-$DBIx::Class::Wrapper::Factory::VERSION = '0.006';
+$DBIx::Class::Wrapper::Factory::VERSION = '0.007';
 use Moose;
 extends qw/DBIx::Class::Wrapper::FactoryBase/;
 
@@ -131,6 +131,18 @@ See <DBIx::Class::ResultSet/first>
 sub first{
   my ($self) = @_;
   my $original = $self->dbic_rs->first();
+  return $original ? $self->wrap($original) : undef;
+}
+
+=head2 single
+
+Equivalent to DBIx::Class::ResultSet::single. It's a bit more efficient than C<first()>.
+
+=cut
+
+sub single {
+  my ($self) = @_;
+  my $original = $self->dbic_rs->single();
   return $original ? $self->wrap($original) : undef;
 }
 

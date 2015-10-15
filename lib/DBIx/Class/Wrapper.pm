@@ -1,5 +1,5 @@
 package DBIx::Class::Wrapper;
-$DBIx::Class::Wrapper::VERSION = '0.006';
+$DBIx::Class::Wrapper::VERSION = '0.007';
 use Moose::Role;
 use Moose::Meta::Class;
 use Module::Pluggable::Object;
